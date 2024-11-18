@@ -31,7 +31,7 @@ public:
   void visit(WhileStatement*);
   void visit(ReturnStatement* e);
   void visit(ForStatement* e);
-  void visit(FCallStatement* e); // Agrega esta línea
+  void visit(FCallStatement* e);
 
   ImpValue visit(BinaryExp* e);
   ImpValue visit(BoolExp* e);
@@ -39,7 +39,7 @@ public:
   ImpValue visit(IdentifierExp* e);
   ImpValue visit(IFExp* e);
   ImpValue visit(FCallExp* e);
-  ImpValue visit(UnaryExp* e); // Agrega esta línea
+  ImpValue visit(UnaryExp* e);
 
 };
 

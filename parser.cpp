@@ -108,17 +108,25 @@ VarDecList* Parser::parseVarDecList() {
 
 StatementList* Parser::parseStatementList() {
     StatementList* sl = new StatementList();
-    sl->add(parseStatement());
-    while (match(Token::PC)) {
+    while (!check(Token::RBRACE)) {  // Sigue analizando hasta encontrar '}'
         sl->add(parseStatement());
+        match(Token::PC);  // Consume ';' si es necesario
     }
     return sl;
 }
 
 
 Body* Parser::parseBody() {
+    if (!match(Token::LBRACE)) {
+        cout << "Error: se esperaba '{' al inicio del cuerpo." << endl;
+        exit(1);
+    }
     VarDecList* vdl = parseVarDecList();
     StatementList* sl = parseStatementList();
+    if (!match(Token::RBRACE)) {
+        cout << "Error: se esperaba '}' al inicio del cuerpo." << "pero sale:" << current->text << endl;
+        exit(1);
+    }
     return new Body(vdl, sl);
 }
 
@@ -170,16 +178,7 @@ FunDec* Parser::parseFunDec() {
         cout << "Error: se esperaba un ')' después de la lista de argumentos." << endl;
         exit(1);
     }
-      if (!match(Token::LBRACE)) {
-          cout << "Error: se esperaba '{' al inicio del cuerpo de la función." << endl;
-          exit(1);
-      }
     body = parseBody();
-      // Cierre del cuerpo con '}'
-      if (!match(Token::RBRACE)) {
-          cout << "Error: se esperaba '}' al final del cuerpo de la función." << "pero se encontro: " << current->text << endl;
-          exit(1);
-      }
     fd = new FunDec(fname, types, vars, rtype, body);
   }
   return fd;
@@ -210,12 +209,11 @@ list<Stm*> Parser::parseStmList() {
     }
     return slist;
 }
-
 Stm* Parser::parseStatement() {
     Stm* s = NULL;
     Exp* e = NULL;
-    Body* tb = NULL; //true case
-    Body* fb = NULL; //false case
+    Body* tb = NULL; // true case
+    Body* fb = NULL; // false case
 
     if (current == NULL) {
         cout << "Error: Token actual es NULL" << endl;
@@ -242,6 +240,9 @@ Stm* Parser::parseStatement() {
                 exit(1);
             }
             s = new FCallStatement(lex, args);
+        } else if (match(Token::INCREMENT) || match(Token::DECREMENT)){
+            UnaryOp op = (previous->type == Token::INCREMENT) ? INCREMENT_OP : DECREMENT_OP;
+            s = new AssignStatement(lex, new UnaryExp(new IdentifierExp(lex), op));
         } else {
             cout << "Error: se esperaba '=' o '(' después del identificador." << endl;
             exit(1);
@@ -256,8 +257,7 @@ Stm* Parser::parseStatement() {
             exit(1);
         }
         string texto = previous->text; //Guardo el string para el print
-        if (!match(Token::COMA))
-        {
+        if (!match(Token::COMA)) {
             cout << "Error: se esperaba ',' después del string." << endl;
             exit(1);
         }
@@ -267,8 +267,7 @@ Stm* Parser::parseStatement() {
             exit(1);
         }
         s = new PrintStatement(e);
-    }
-    else if (match(Token::IF)) {
+    } else if (match(Token::IF)) {
         if (!match(Token::PI)){
             cout << "Error: se esperaba '(' después de la expresión." << endl;
         }
@@ -278,34 +277,20 @@ Stm* Parser::parseStatement() {
             exit(1);
         }
 
-        if (!match(Token::LBRACE)) {
-            cout << "Error: se esperaba '{' después de la expresión." << endl;
-            exit(1);
-        }
 
         tb = parseBody();
-        if (!match(Token::RBRACE)) {
-            cout << "Error: se esperaba '}' al final de la declaración." << endl;
-            exit(1);
-        }
+
 
         if (!match(Token::ELSE)) {
             cout << "Error: se esperaba 'else' después del bloque de 'if'." << endl;
             exit(1);
         }
-        if (!match(Token::LBRACE)) {
-            cout << "Error: se esperaba '{' después de la expresión." << endl;
-            exit(1);
-        }
+
         fb = parseBody();
-        if (!match(Token::RBRACE)) {
-            cout << "Error: se esperaba '}' al final de la declaración." << endl;
-            exit(1);
-        }
+
         s = new IfStatement(e, tb, fb);
 
-    }
-    else if (match(Token::WHILE)) {
+    } else if (match(Token::WHILE)) {
         e = parseCExp();
         if (!match(Token::DO)) {
             cout << "Error: se esperaba 'do' después de la expresión." << endl;
@@ -318,35 +303,27 @@ Stm* Parser::parseStatement() {
         }
         s = new WhileStatement(e, tb);
 
-    }
-    else if(match(Token::FOR)){
+    } else if(match(Token::FOR)){
         if(!match(Token::PI)){
             cout << "Error: se esperaba '(' después de 'for'." << endl;
             exit(1);
         }
-        Exp* start = parseCExp();
-        if (!match(Token::COMA)) {
-            cout << "Error: se esperaba ',' después de la expresión." << endl;
+        VarDec* init = parseVarDec();
+        Exp* condition = parseCExp();
+
+        if (!match(Token::PC)) {
+            cout << "Error: se esperaba ';' después de la condicion." << endl;
             exit(1);
         }
-        Exp* end = parseCExp();
-        if (!match(Token::COMA)) {
-            cout << "Error: se esperaba ',' después de la expresión." << endl;
-            exit(1);
-        }
-        Exp* step = parseCExp();
+        Stm* increment = parseStatement();
         if (!match(Token::PD)) {
             cout << "Error: se esperaba ')' después de la expresión." << endl;
             exit(1);
         }
         tb = parseBody();
-        if (!match(Token::ENDFOR)) {
-            cout << "Error: se esperaba 'endfor' al final de la declaración." << endl;
-            exit(1);
-        }
-        s = new ForStatement(start, end, step, tb);
-    }
-    else if(match(Token::RETURN)){
+
+        s = new ForStatement(init, condition, increment, tb);
+    } else if(match(Token::RETURN)){
         if (!match(Token::PI)) {
             cout << "Error: se esperaba '(' después de 'return'." << endl;
             exit(1);
@@ -359,8 +336,7 @@ Stm* Parser::parseStatement() {
             exit(1);
         }
         s = new ReturnStatement(e); //Si es null, no hay problema
-    }
-    else {
+    }else {
         cout << "Error: Se esperaba un identificador o 'print', pero se encontró: " << *current << endl;
         exit(1);
     }
@@ -388,16 +364,7 @@ Exp* Parser::parseCExp(){
 
 Exp* Parser::parseExpression() {
     Exp* left = parseTerm();
-    if(match(Token::INCREMENT) || match(Token::DECREMENT)){
-        UnaryOp op;
-        if (previous->type == Token::INCREMENT){
-            op = INCREMENT_OP;
-        }
-        else if (previous->type == Token::DECREMENT){
-            op = DECREMENT_OP;
-        }
-        //return new UnaryExp(left, op); //No se usa por el momento
-    }
+
     while (match(Token::PLUS) || match(Token::MINUS)) {
         BinaryOp op;
         if (previous->type == Token::PLUS){

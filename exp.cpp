@@ -41,12 +41,13 @@ WhileStatement::~WhileStatement() {
     delete condition;
     delete b;
 }
-ForStatement::ForStatement(Exp* s, Exp* e, Exp* st, Body* b): start(s), end(e), step(st), b(b) {}
+ForStatement::ForStatement(VarDec* init, Exp* condition, Stm* increment, Body* body)
+    : init(init), condition(condition), increment(increment), body(body) {}
 ForStatement::~ForStatement() {
-    delete start;
-    delete end;
-    delete step;
-    delete b;
+    delete init;
+    delete condition;
+    delete increment;
+    delete body;
 }
 
 
@@ -156,7 +157,7 @@ void FCallStatement::accept(ImpValueVisitor* v) {
     v->visit(this);
 }
 
-/*
+
 UnaryExp::UnaryExp(Exp* operand, UnaryOp op) : operand(operand), op(op) {}
 UnaryExp::~UnaryExp() {
     delete operand;
@@ -170,4 +171,3 @@ int UnaryExp::accept(Visitor* visitor)  {
 ImpValue UnaryExp::accept(ImpValueVisitor* v)  {
     return v->visit(this);
 }
-*/

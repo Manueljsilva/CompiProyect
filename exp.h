@@ -128,16 +128,15 @@ public:
 
 class ForStatement : public Stm {
 public:
-    Exp* start; //init
-    Exp* end;   //
-    Exp* step;  //incrise
-    Body* b;
-    ForStatement(Exp* start, Exp* end, Exp* step, Body* b);
+    VarDec* init; // initialization statement
+    Exp* condition; // condition expression
+    Stm* increment; // increment statement
+    Body* body;
+    ForStatement(VarDec* init, Exp* condition, Stm* increment, Body* body);
     int accept(Visitor* visitor);
     void accept(ImpValueVisitor* v);
     ~ForStatement();
 };
-
 class VarInit {
 public:
     std::string name;

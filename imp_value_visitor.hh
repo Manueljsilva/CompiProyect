@@ -26,7 +26,7 @@ public:
   virtual ImpValue visit(IFExp* e) = 0;
   virtual ImpValue visit(FCallExp* e) = 0;
   virtual void visit(FCallStatement* e) = 0;
-  //virtual ImpValue visit(UnaryExp* p) = 0;
+  virtual ImpValue visit(UnaryExp* e) = 0;
 };
 
 

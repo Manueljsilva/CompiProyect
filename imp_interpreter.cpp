@@ -243,18 +243,19 @@ void ImpInterpreter::visit(ReturnStatement* s) {
 }
 void ImpInterpreter::visit(ForStatement* s) {
     env.add_level();
-    ImpValue start = s->start->accept(this);
-    ImpValue end = s->end->accept(this);
-    ImpValue paso = s->step->accept(this);
-    if (start.type != TINT || end.type != TINT || paso.type != TINT){
-        cout << "Type error en FOR: esperaba int" << endl;
-        exit(0);
+    s->init->accept(this); // Execute initialization statement
+    while (true) {
+        ImpValue condition = s->condition->accept(this);
+        if (condition.type != TINT && condition.type != TBOOL) {
+            cout << "Type error en FOR: esperaba int o bool en la condición" << endl;
+            exit(0);
+        }
+        if (condition.type == TBOOL && !condition.bool_value) break;
+        if (condition.type == TINT && condition.int_value == 0) break;
+        s->body->accept(this); // Execute the body of the loop
+        s->increment->accept(this); // Execute the increment statement
     }
-    int a =start.int_value;
-    while(a<end.int_value){
-        s->b->accept(this);
-        a+= paso.int_value;
-    }
+    env.remove_level();
     return;
 }
 
@@ -308,22 +309,6 @@ ImpValue ImpInterpreter::visit(BinaryExp* e) {
     else
         result.bool_value = bv;
     result.type = type;
-    return result;
-}
-
-
-ImpValue ImpInterpreter::visit(UnaryExp* e) {
-    ImpValue result;
-    ImpValue operandValue = e->operand->accept(this);
-    if (operandValue.type != TINT) {
-        cout << "Error de tipos: el operando debe ser un entero" << endl;
-        exit(0);
-    }
-    if (e->op == INCREMENT_OP) {
-        result = operandValue;
-        result.int_value++;
-        env.update(dynamic_cast<IdentifierExp*>(e->operand)->name, result);
-    }
     return result;
 }
 
@@ -445,4 +430,22 @@ void ImpInterpreter::visit(FCallStatement* s) {
     env.remove_level();
 }
 
+ImpValue ImpInterpreter::visit(UnaryExp* e) {
+    ImpValue result;
+    ImpValue operandValue = e->operand->accept(this);
+    if (operandValue.type != TINT) {
+        cout << "Error de tipos: el operando debe ser un entero" << endl;
+        exit(0);
+    }
+    if (e->op == INCREMENT_OP) {
+        result = operandValue;
+        result.int_value++;
+        env.update(dynamic_cast<IdentifierExp*>(e->operand)->name, result);
+    } else if (e->op == DECREMENT_OP) {
+        result = operandValue;
+        result.int_value--;
+        env.update(dynamic_cast<IdentifierExp*>(e->operand)->name, result);
+    }
+    return result;
+}
 

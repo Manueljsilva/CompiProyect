@@ -172,13 +172,13 @@ void PrintVisitor::visit(WhileStatement* stm){
 
 void PrintVisitor::visit(ForStatement* stm){
     cout << "for ";
-    stm->start->accept(this);
+    stm->init->accept(this);
     cout << " to ";
-    stm->end->accept(this);
+    stm->condition->accept(this);
     cout << " step ";
-    stm->step->accept(this);
+    stm->increment->accept(this);
     cout << " do" << endl;
-    stm->b->accept(this);
+    stm->body->accept(this);
     cout << "endfor";
 }
 
@@ -280,4 +280,18 @@ void PrintVisitor::visit(FCallStatement* stm) {
         first = false;
     }
     cout << ");";
+}
+
+int PrintVisitor::visit(UnaryExp* e) {
+    printIndent();
+    std::cout << "UnaryExp(";
+    if (e->op == INCREMENT_OP) {
+        std::cout << "++";
+    } else if (e->op == DECREMENT_OP) {
+        std::cout << "--";
+    }
+    std::cout << ", ";
+    e->operand->accept(this);
+    std::cout << ")";
+    return 0;
 }

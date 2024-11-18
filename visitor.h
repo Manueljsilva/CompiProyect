@@ -36,7 +36,7 @@ public:
     virtual int visit(BoolExp* exp) = 0;
     virtual int visit(IdentifierExp* exp) = 0;
     virtual int visit(FCallExp* exp) = 0;
-    //virtual int visit(UnaryExp* e) = 0;
+    virtual int visit(UnaryExp* e) = 0;
     virtual void visit(AssignStatement* stm) = 0;
     virtual void visit(PrintStatement* stm) = 0;
     virtual void visit(IfStatement* stm) = 0;
@@ -62,7 +62,7 @@ public:
     int visit(BoolExp* exp) override;
     int visit(IdentifierExp* exp) override;
     int visit(FCallExp* exp) override;
-    //int visit(UnaryExp* e) override;
+    int visit(UnaryExp* e) override;
     void visit(AssignStatement* stm) override;
     void visit(PrintStatement* stm) override;
     void visit(IfStatement* stm) override;
