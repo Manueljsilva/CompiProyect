@@ -72,7 +72,8 @@ Token* Scanner::nextToken() {
         }
         else if (word == "endfun") {
             token = new Token(Token::ENDFUN, word, 0, word.length());
-        } else if(word == "printf")
+        } 
+        else if(word == "printf")
         {
             token = new Token(Token::PRINTF, word, 0, word.length());
         }
@@ -133,6 +134,34 @@ Token* Scanner::nextToken() {
             current++;
         }
     }
+
+    //  formato dentro de printf 
+    else if (c == '%' && current + 1 < input.length()) {
+    string formatSpecifier;
+    formatSpecifier += "%";  // Empezamos con el signo de porcentaje
+
+    // Detectar especificadores como %d, %ld, %s, etc.
+    char nextChar = input[current + 1];
+    if (nextChar == 'd' || nextChar == 's' || nextChar == 'f') {
+        formatSpecifier += nextChar;
+        token = new Token(Token::PRINTF_FORMAT, formatSpecifier, first, formatSpecifier.length());
+        current += 2; 
+    }
+    else if (nextChar == 'l' && current + 2 < input.length() && input[current + 2] == 'd') {
+        formatSpecifier += "ld";
+        token = new Token(Token::PRINTF_FORMAT, formatSpecifier, first, formatSpecifier.length());
+        current += 3;  
+    }
+
+    else if (nextChar == '\n') {
+        formatSpecifier += "\n";  
+        token = new Token(Token::PRINTF_FORMAT, formatSpecifier, first, formatSpecifier.length());
+        current += 1; 
+    }
+}
+
+
+
     else {
         token = new Token(Token::ERR, c);
         current++;

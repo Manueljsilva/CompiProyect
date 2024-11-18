@@ -48,6 +48,7 @@ std::ostream& operator << ( std::ostream& outs, const Token & tok )
         case Token::FUN : outs << "TOKEN(FUN)"; break;
         case Token::ENDFUN : outs << "TOKEN(ENDFUN)"; break;
         case Token::PRINTF : outs << "TOKEN(PRINTF)"; break;
+        case Token::PRINTF_FORMAT : outs << "TOKEN(PRINTF_FORMAT)"; break;        
         case Token::LBRACE : outs << "TOKEN(LBRACE)"; break;
         case Token::RBRACE : outs << "TOKEN(RBRACE)"; break;
         case Token::STRING : outs << "TOKEN(STRING)"; break;

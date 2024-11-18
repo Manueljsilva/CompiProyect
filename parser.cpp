@@ -248,7 +248,7 @@ Stm* Parser::parseStatement() {
         }
     } else if (match(Token::PRINTF)) {
         if (!match(Token::PI)) {
-            cout << "Error: se esperaba un '(' después de 'print'." << endl;
+            cout << "Error: se esperaba un '(' después de 'printf'." << endl;
             exit(1);
         }
         if(!match(Token::STRING)){
