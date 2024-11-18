@@ -30,8 +30,8 @@ Token* Scanner::nextToken() {
         while (current < input.length() && isalnum(input[current]))
             current++;
         string word = input.substr(first, current - first);
-        if (word == "print") {
-            token = new Token(Token::PRINT, word, 0, word.length());
+        if (word == "printf") {
+            token = new Token(Token::PRINTF, word, 0, word.length());
         } else if (word == "if") {
             token = new Token(Token::IF, word, 0, word.length());
         } else if (word == "then") {
@@ -73,10 +73,6 @@ Token* Scanner::nextToken() {
         else if (word == "endfun") {
             token = new Token(Token::ENDFUN, word, 0, word.length());
         } 
-        else if(word == "printf")
-        {
-            token = new Token(Token::PRINTF, word, 0, word.length());
-        }
         else {
             token = new Token(Token::ID, word, 0, word.length());
         }
@@ -123,42 +119,47 @@ Token* Scanner::nextToken() {
                 token = new Token(Token::ERR, c);
         }
         current++;
-    } else if(c == '"') {
-        current++; // saltear la priemra comilla
-        while (current < input.length() && input[current] != '"')
-            current++;
-        if (current >= input.length()) {
-            token = new Token(Token::ERR, c);
-        } else {
-            token = new Token(Token::STRING, input, first + 1, current - first - 1);
-            current++;
+    } 
+
+    else if (c == '"') {
+    current++;
+    while (current < input.length() && input[current] != '"') {
+        if (input[current] == '%') {
+            string formatSpecifier;
+            formatSpecifier += "%"; 
+
+            char nextChar = input[current + 1];
+            if (nextChar == 'd' || nextChar == 's' || nextChar == 'f') {
+                formatSpecifier += nextChar;
+                token = new Token(Token::PRINTF_FORMAT, formatSpecifier, first, formatSpecifier.length());
+                current += 2;
+                continue; 
+            }
+            else if (nextChar == 'l' && current + 2 < input.length() && input[current + 2] == 'd') {
+                formatSpecifier += "ld";
+                token = new Token(Token::PRINTF_FORMAT, formatSpecifier, first, formatSpecifier.length());
+                current += 3;  
+                continue; 
+            }
+
+            else if (nextChar == '\n') {
+                formatSpecifier += "\n";  
+                token = new Token(Token::PRINTF_FORMAT, formatSpecifier, first, formatSpecifier.length());
+                current += 1;  
+                continue; 
+            }
         }
+        current++;  
     }
 
-    //  formato dentro de printf 
-    else if (c == '%' && current + 1 < input.length()) {
-    string formatSpecifier;
-    formatSpecifier += "%";  // Empezamos con el signo de porcentaje
-
-    // Detectar especificadores como %d, %ld, %s, etc.
-    char nextChar = input[current + 1];
-    if (nextChar == 'd' || nextChar == 's' || nextChar == 'f') {
-        formatSpecifier += nextChar;
-        token = new Token(Token::PRINTF_FORMAT, formatSpecifier, first, formatSpecifier.length());
-        current += 2; 
-    }
-    else if (nextChar == 'l' && current + 2 < input.length() && input[current + 2] == 'd') {
-        formatSpecifier += "ld";
-        token = new Token(Token::PRINTF_FORMAT, formatSpecifier, first, formatSpecifier.length());
-        current += 3;  
-    }
-
-    else if (nextChar == '\n') {
-        formatSpecifier += "\n";  
-        token = new Token(Token::PRINTF_FORMAT, formatSpecifier, first, formatSpecifier.length());
-        current += 1; 
+    if (current >= input.length()) {
+        token = new Token(Token::ERR, c); 
+    } else {
+        token = new Token(Token::STRING, input, first + 1, current - first - 1);
+        current++;  
     }
 }
+
 
 
 
