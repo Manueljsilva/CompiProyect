@@ -29,6 +29,8 @@ std::ostream& operator << ( std::ostream& outs, const Token & tok )
         case Token::LT: outs << "TOKEN(LT)"; break;
         case Token::LE: outs << "TOKEN(LE)"; break;
         case Token::EQ: outs << "TOKEN(EQ)"; break;
+        case Token::GE: outs << "TOKEN(GE)"; break;
+        case Token::GT: outs << "TOKEN(GT)"; break;
         case Token::IF: outs << "TOKEN(IF)"; break;
         case Token::THEN: outs << "TOKEN(THEN)"; break;
         case Token::ELSE: outs << "TOKEN(ELSE)"; break;
@@ -38,21 +40,22 @@ std::ostream& operator << ( std::ostream& outs, const Token & tok )
         case Token::IFEXP: outs << "TOKEN(IFEXP)"; break;
         case Token::DO: outs << "TOKEN(DO)"; break;
         case Token::ENDWHILE: outs << "TOKEN(ENDWHILE)"; break;
-        case Token::VAR: outs << "TOKEN(VAR)"; break;
         case Token::FOR : outs << "TOKEN(FOR)"; break;
         case Token::ENDFOR : outs << "TOKEN(ENDFOR)"; break;
         case Token::TRUE : outs << "TOKEN(TRUE)"; break;
         case Token::FALSE : outs << "TOKEN(FALSE)"; break;
         case Token::RETURN : outs << "TOKEN(RETURN)"; break;
-        case Token::FUN : outs << "TOKEN(FUN)"; break;
-        case Token::ENDFUN : outs << "TOKEN(ENDFUN)"; break;
         case Token::PRINTF : outs << "TOKEN(PRINTF)"; break;
-        case Token::PRINTF_FORMAT : outs << "TOKEN(PRINTF_FORMAT)"; break;        
+        case Token::PRINTF_FORMAT : outs << "TOKEN(PRINTF_FORMAT)"; break;
         case Token::LBRACE : outs << "TOKEN(LBRACE)"; break;
         case Token::RBRACE : outs << "TOKEN(RBRACE)"; break;
         case Token::STRING : outs << "TOKEN(STRING)"; break;
         case Token::INCREMENT : outs << "TOKEN(INCREMENT)"; break;
         case Token::DECREMENT : outs << "TOKEN(DECREMENT)"; break;
+        case Token::TYPE : outs << "TOKEN(TYPE)"; break;
+        case Token::MAIN : outs << "TOKEN(MAIN)"; break;
+        case Token::INCLUDE : outs << "TOKEN(INCLUDE)"; break;
+        case Token::HASH : outs << "TOKEN(HASH)"; break;
         default: outs << "TOKEN(UNKNOWN)"; break;
     }
     return outs;

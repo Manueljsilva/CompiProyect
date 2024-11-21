@@ -25,10 +25,7 @@ AssignStatement::AssignStatement(string id, Exp* e): id(id), rhs(e) {}
 AssignStatement::~AssignStatement() {
     delete rhs;
 }
-PrintStatement::PrintStatement(Exp* e): e(e) {}
-PrintStatement::~PrintStatement() {
-    delete e;
-}
+
 
 IfStatement::IfStatement(Exp* c, Body* t, Body* e): condition(c), then(t), els(e) {}
 IfStatement::~IfStatement() {
@@ -122,6 +119,8 @@ string Exp::binopToChar(BinaryOp op) {
         case DIV_OP: c = "/"; break;
         case LT_OP: c = "<"; break;
         case LE_OP: c = "<="; break;
+        case GE_OP: c = ">="; break;
+        case GT_OP: c = ">"; break;
         case EQ_OP: c = "=="; break;
         default: c = "$";
     }

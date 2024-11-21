@@ -10,7 +10,7 @@
 using namespace std;
 enum BinaryOp
 {
-    PLUS_OP, MINUS_OP, MUL_OP, DIV_OP,LT_OP, LE_OP, EQ_OP
+    PLUS_OP, MINUS_OP, MUL_OP, DIV_OP,LT_OP, LE_OP, GE_OP, GT_OP, EQ_OP,
 };
 
 class Body;
@@ -99,11 +99,15 @@ public:
 class PrintStatement : public Stm {
 public:
     Exp* e;
-    PrintStatement(Exp* e);
-    int accept(Visitor* visitor);
+    string format;
+    PrintStatement(Exp* e, string format) : e(e), format(format) {}
+    int accept(Visitor* visitor) ;
     void accept(ImpValueVisitor* v);
-    ~PrintStatement();
+    ~PrintStatement() {
+        if (e) delete e;
+    }
 };
+
 
 
 class IfStatement : public Stm {

@@ -199,8 +199,31 @@ void ImpInterpreter::visit(AssignStatement* s) {
 
 void ImpInterpreter::visit(PrintStatement* s) {
     ImpValue v = s->e->accept(this);
-    cout << v << endl;
-    return;
+    if (s->format.find("%d") != string::npos && v.type != TINT) {
+        cout << "Error: formato %d requiere un entero" << endl;
+        exit(0);
+    }
+    if (s->format.find("%ld") != string::npos && v.type != TLONG) {
+        cout << "Error: formato %ld requiere un long" << endl;
+        exit(0);
+    }
+
+    // Reemplazar %d o %ld con el valor actual
+    string output = s->format;
+    size_t pos;
+    if ((pos = output.find("%d")) != string::npos) {
+        output.replace(pos, 2, to_string(v.int_value));
+    } else if ((pos = output.find("%ld")) != string::npos) {
+        output.replace(pos, 3, to_string(v.long_value));
+    }
+
+    pos = 0;
+    while ((pos = output.find("\\n", pos)) != string::npos) {
+        output.replace(pos, 2, "\n");
+        pos += 1;
+    }
+
+    cout << output;
 }
 
 void ImpInterpreter::visit(IfStatement* s) {
@@ -275,34 +298,42 @@ ImpValue ImpInterpreter::visit(BinaryExp* e) {
     iv1 = v1.int_value;
     iv2 = v2.int_value;
     switch (e->op) {
-        case PLUS_OP:
-            iv = iv1 + iv2;
-            type = TINT;
-            break;
-        case MINUS_OP:
-            iv = iv1 - iv2;
-            type = TINT;
-            break;
-        case MUL_OP:
-            iv = iv1 * iv2;
-            type = TINT;
-            break;
-        case DIV_OP:
-            iv = iv1 / iv2;
-            type = TINT;
-            break;
-        case LT_OP:
-            bv = (iv1 < iv2) ? 1 : 0;
-            type = TBOOL;
-            break;
-        case LE_OP:
-            bv = (iv1 <= iv2) ? 1 : 0;
-            type = TBOOL;
-            break;
-        case EQ_OP:
-            bv = (iv1 == iv2) ? 1 : 0;
-            type = TBOOL;
-            break;
+    case PLUS_OP:
+        iv = iv1 + iv2;
+        type = TINT;
+        break;
+    case MINUS_OP:
+        iv = iv1 - iv2;
+        type = TINT;
+        break;
+    case MUL_OP:
+        iv = iv1 * iv2;
+        type = TINT;
+        break;
+    case DIV_OP:
+        iv = iv1 / iv2;
+        type = TINT;
+        break;
+    case LT_OP:
+        bv = (iv1 < iv2) ? 1 : 0;
+        type = TBOOL;
+        break;
+    case LE_OP:
+        bv = (iv1 <= iv2) ? 1 : 0;
+        type = TBOOL;
+        break;
+    case GE_OP:
+        bv = (iv1 >= iv2) ? 1 : 0;
+        type = TBOOL;
+        break;
+    case GT_OP:
+        bv = (iv1 > iv2) ? 1 : 0;
+        type = TBOOL;
+        break;
+    case EQ_OP:
+        bv = (iv1 == iv2) ? 1 : 0;
+        type = TBOOL;
+        break;
     }
     if (type == TINT)
         result.int_value = iv;
@@ -314,8 +345,14 @@ ImpValue ImpInterpreter::visit(BinaryExp* e) {
 
 ImpValue ImpInterpreter::visit(NumberExp* e) {
     ImpValue v;
-    v.set_default_value(TINT);
-    v.int_value = e->value;
+    // Para números grandes (>= 1000000), usar LONG
+    if (e->value >= 1000000) {
+        v.type = TLONG;
+        v.long_value = e->value;
+    } else {
+        v.type = TINT;
+        v.int_value = e->value;
+    }
     return v;
 }
 

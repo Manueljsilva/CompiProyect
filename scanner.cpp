@@ -55,9 +55,6 @@ Token* Scanner::nextToken() {
         else if (word == "endfor") {
             token = new Token(Token::ENDFOR, word, 0, word.length());
         }
-        else if (word == "var") {
-            token = new Token(Token::VAR, word, 0, word.length());
-        }
         else if (word == "true") {
             token = new Token(Token::TRUE, word, 0, word.length());
         }
@@ -67,27 +64,34 @@ Token* Scanner::nextToken() {
         else if (word == "return") {
             token = new Token(Token::RETURN, word, 0, word.length());
         }
-        else if (word == "fun") {
-            token = new Token(Token::FUN, word, 0, word.length());
+        else if (word == "int") {
+            token = new Token(Token::TYPE, word, 0, word.length());
         }
-        else if (word == "endfun") {
-            token = new Token(Token::ENDFUN, word, 0, word.length());
-        } 
+        else if (word == "main") {
+            token = new Token(Token::MAIN, word, 0, word.length());
+        }
+        else if (word == "include") {
+            token = new Token(Token::INCLUDE, word, 0, word.length());
+        }
+        else if (word == "long") {
+            token = new Token(Token::TYPE, word, 0, word.length());
+        }
         else {
             token = new Token(Token::ID, word, 0, word.length());
         }
     }
 
-    else if (strchr("+-*/()=;,<{}", c)) {
+    else if (strchr("+-*/()=;,<>{}#", c)) {
+        current++;  // Avanzar el cursor primero
         switch(c) {
             case '+':
-                if(current + 1 < input.length() && input[current + 1] == '+'){
+                if (current < input.length() && input[current] == '+') {
                     token = new Token(Token::INCREMENT, "++", 0, 2);
                     current++;
-                    break ;
-                }else{
-                    token = new Token(Token::PLUS, c); break ;
+                } else {
+                    token = new Token(Token::PLUS, c);
                 }
+                break;
 
             case '-': token = new Token(Token::MINUS, c); break;
             case '*': token = new Token(Token::MUL, c); break;
@@ -97,6 +101,7 @@ Token* Scanner::nextToken() {
             case ')': token = new Token(Token::PD, c); break;
             case '{': token = new Token(Token::LBRACE, c); break ;
             case '}': token = new Token(Token::RBRACE, c); break ;
+            case '#': token = new Token(Token::HASH, c); break;
             case '=':
                 if (current + 1 < input.length() && input[current + 1] == '=') {
                     token = new Token(Token::EQ, "==", 0, 2);
@@ -113,55 +118,61 @@ Token* Scanner::nextToken() {
                     token = new Token(Token::LT, c);
                 }
                 break;
+            case '>':
+                if (current < input.length() && input[current] == '=') {
+                    token = new Token(Token::GE, input, first, 2);
+                    current++;
+                } else {
+                    token = new Token(Token::GT, input, first, 1);
+                }
+                break;
             case ';': token = new Token(Token::PC, c); break;
             default:
-                cout << "No debería llegar acá" << endl;
                 token = new Token(Token::ERR, c);
         }
-        current++;
-    } 
+        return token;  // Retornar el token aquí
+    }
 
     else if (c == '"') {
-    current++;
-    while (current < input.length() && input[current] != '"') {
-        if (input[current] == '%') {
-            string formatSpecifier;
-            formatSpecifier += "%"; 
+        current++;  // Skip opening quote
+        first = current;  // Start of string content
 
-            char nextChar = input[current + 1];
-            if (nextChar == 'd' || nextChar == 's' || nextChar == 'f') {
-                formatSpecifier += nextChar;
-                token = new Token(Token::PRINTF_FORMAT, formatSpecifier, first, formatSpecifier.length());
-                current += 2;
-                continue; 
-            }
-            else if (nextChar == 'l' && current + 2 < input.length() && input[current + 2] == 'd') {
-                formatSpecifier += "ld";
-                token = new Token(Token::PRINTF_FORMAT, formatSpecifier, first, formatSpecifier.length());
-                current += 3;  
-                continue; 
-            }
+        while (current < input.length() && input[current] != '"') {
+            if (input[current] == '%') {
+                int format_start = current;
+                current++;  // Move past %
 
-            else if (nextChar == '\n') {
-                formatSpecifier += "\n";  
-                token = new Token(Token::PRINTF_FORMAT, formatSpecifier, first, formatSpecifier.length());
-                current += 1;  
-                continue; 
+                // Handle %ld\n
+                if (current < input.length() && input[current] == 'l' &&
+                    current + 1 < input.length() && input[current + 1] == 'd') {
+                    current += 2;  // Move past 'ld'
+                    if (current + 1 < input.length() &&
+                        input[current] == '\\' && input[current + 1] == 'n') {
+                        current += 2;  // Move past '\n'
+                    }
+                    current++;  // Skip closing quote
+                    return new Token(Token::PRINTF_FORMAT, input, format_start, current - format_start - 1);
+                }
+                // Handle %d\n, %s\n, %f\n
+                else if (current < input.length() &&
+                        (input[current] == 'd' || input[current] == 's' || input[current] == 'f')) {
+                    current++;  // Move past d/s/f
+                    if (current + 1 < input.length() &&
+                        input[current] == '\\' && input[current + 1] == 'n') {
+                        current += 2;  // Move past '\n'
+                    }
+                    current++;  // Skip closing quote
+                    return new Token(Token::PRINTF_FORMAT, input, format_start, current - format_start - 1);
+                }
             }
+            current++;
         }
-        current++;  
+
+        // Handle regular string (aunque en este caso no deberíamos llegar aquí para printf)
+        int length = current - first;
+        current++;  // Skip closing quote
+        return new Token(Token::STRING, input, first, length);
     }
-
-    if (current >= input.length()) {
-        token = new Token(Token::ERR, c); 
-    } else {
-        token = new Token(Token::STRING, input, first + 1, current - first - 1);
-        current++;  
-    }
-}
-
-
-
 
     else {
         token = new Token(Token::ERR, c);
@@ -179,7 +190,6 @@ Scanner::~Scanner() { }
 
 void test_scanner(Scanner* scanner) {
     Token* current;
-    cout << "Iniciando Scanner:" << endl<< endl;
     while ((current = scanner->nextToken())->type != Token::END) {
         if (current->type == Token::ERR) {
             cout << "Error en scanner - carácter inválido: " << current->text << endl;
