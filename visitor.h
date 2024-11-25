@@ -37,6 +37,7 @@ public:
     virtual int visit(IdentifierExp* exp) = 0;
     virtual int visit(FCallExp* exp) = 0;
     virtual int visit(UnaryExp* e) = 0;
+
     virtual void visit(AssignStatement* stm) = 0;
     virtual void visit(PrintStatement* stm) = 0;
     virtual void visit(IfStatement* stm) = 0;

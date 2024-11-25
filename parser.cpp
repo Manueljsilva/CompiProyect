@@ -120,7 +120,8 @@ StatementList* Parser::parseStatementList() {
 
             // Verificar si el statement actual es un if-else
             bool isIfStatement = dynamic_cast<IfStatement*>(stmt) != nullptr||
-                                dynamic_cast<ForStatement*>(stmt) != nullptr ;
+                                dynamic_cast<ForStatement*>(stmt) != nullptr ||
+                                dynamic_cast<WhileStatement*>(stmt) != nullptr;
 
             // No requerir punto y coma después de bloques if-else o antes de else
             if (!check(Token::RBRACE) && !isIfStatement) {
@@ -432,17 +433,11 @@ Stm* Parser::parseStatement() {
 
         s = new ForStatement(init, condition, increment, tb);
     } else if(match(Token::RETURN)){
-        if (!match(Token::PI)) {
-            cout << "Error: se esperaba '(' después de 'return'." << endl;
-            exit(1);
-        }
+
         if (!check(Token::PD)){
             e = parseCExp();
         }
-        if (!match(Token::PD)) {
-            cout << "Error: se esperaba ')' después de la expresión." << endl;
-            exit(1);
-        }
+
         s = new ReturnStatement(e); //Si es null, no hay problema
     }else {
         cout << "Error: Se esperaba un identificador o 'print', pero se encontró: " << *current << endl;

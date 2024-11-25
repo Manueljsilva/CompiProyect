@@ -57,6 +57,7 @@ public:
     BoolExp(bool v);
     int accept(Visitor* visitor);
     ImpValue accept(ImpValueVisitor* v);
+
     ~BoolExp();
 };
 
@@ -146,6 +147,7 @@ public:
     std::string name;
     Exp* init; // Puede ser NULL si no hay inicialización
     VarInit(std::string name, Exp* init);
+    //void accept(TypeVisitor* v);
     ~VarInit();
 };
 
@@ -248,6 +250,7 @@ public:
     UnaryExp(Exp* operand, UnaryOp op);
     int accept(Visitor* visitor);
     ImpValue accept(ImpValueVisitor* v);
+
     ~UnaryExp();
 };
 

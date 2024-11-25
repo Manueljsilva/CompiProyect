@@ -270,9 +270,9 @@ void PrintVisitor::visit(FunDecList* stm){
 void PrintVisitor::visit(ReturnStatement* s) {
     cout << endl;  // Add newline before return
     printIndent();
-    cout << "return (";
+    cout << "return ";
     if (s->e != NULL) s->e->accept(this);
-    cout << ");";
+    cout << ";";
 }
 
 int PrintVisitor::visit(FCallExp* e) {

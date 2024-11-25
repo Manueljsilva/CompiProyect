@@ -101,7 +101,11 @@ Token* Scanner::nextToken() {
             case ')': token = new Token(Token::PD, c); break;
             case '{': token = new Token(Token::LBRACE, c); break ;
             case '}': token = new Token(Token::RBRACE, c); break ;
-            case '#': token = new Token(Token::HASH, c); break;
+            case '#':
+                while (current < input.length() && input[current] != '\n') {
+                    current++;
+                }
+                return nextToken();
             case '=':
                 if (current + 1 < input.length() && input[current + 1] == '=') {
                     token = new Token(Token::EQ, "==", 0, 2);
