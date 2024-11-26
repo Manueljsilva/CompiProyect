@@ -42,7 +42,6 @@ public:
   int visit(NumberExp* e);
   int visit(BoolExp* e);
   int visit(IdentifierExp* e);
-  int visit(IFExp* e);
   int visit(FCallExp* e);
   int visit(UnaryExp* e);
 

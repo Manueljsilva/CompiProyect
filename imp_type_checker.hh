@@ -57,7 +57,6 @@ public:
   ImpType visit(NumberExp* e);
   ImpType visit(BoolExp* e);
   ImpType visit(IdentifierExp* e);
-  ImpType visit(IFExp* e);
   ImpType visit(FCallExp* e);
   ImpType visit(UnaryExp* e);
 private:

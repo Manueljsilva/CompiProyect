@@ -529,16 +529,6 @@ Exp* Parser::parseFactor() {
         }
             
     }
-    else if (match(Token::IFEXP)) {
-        match(Token::PI);
-        e=parseCExp();
-        match(Token::COMA);
-        e1=parseCExp();
-        match(Token::COMA);
-        e2=parseCExp();
-        match(Token::PD);
-        return new IFExp(e,e1,e2);
-    }
     else if (match(Token::PI)){
         e = parseCExp();
         if (!match(Token::PD)){

@@ -5,7 +5,7 @@
 #include "imp_value_visitor.hh"
 
 using namespace std;
-IFExp::IFExp(Exp* cond,Exp* l, Exp* r): cond(cond),left(l),right(r){}
+
 BinaryExp::BinaryExp(Exp* l, Exp* r, BinaryOp op):left(l),right(r),op(op) {}
 NumberExp::NumberExp(int v):value(v) {}
 BoolExp::BoolExp(bool v):value(v) {}
@@ -13,7 +13,7 @@ IdentifierExp::IdentifierExp(const string& n):name(n) {}
 FCallExp::FCallExp(string fname, list<Exp*> args):fname(fname),args(args) {}
 Exp::~Exp() {}
 BinaryExp::~BinaryExp() { delete left; delete right; }
-IFExp::~IFExp() {delete cond, delete left; delete right; }
+
 NumberExp::~NumberExp() { }
 BoolExp::~BoolExp() { }
 IdentifierExp::~IdentifierExp() { }

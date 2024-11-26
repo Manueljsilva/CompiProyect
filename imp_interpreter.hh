@@ -36,7 +36,6 @@ public:
   ImpValue visit(BoolExp* e);
   ImpValue visit(NumberExp* e);
   ImpValue visit(IdentifierExp* e);
-  ImpValue visit(IFExp* e);
   ImpValue visit(FCallExp* e);
   ImpValue visit(UnaryExp* e);
 };

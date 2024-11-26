@@ -8,9 +8,7 @@ using namespace std;
 int BinaryExp::accept(Visitor* visitor) {
     return visitor->visit(this);
 }
-int IFExp::accept(Visitor* visitor) {
-    return visitor->visit(this);
-}
+
 int NumberExp::accept(Visitor* visitor) {
     return visitor->visit(this);
 }
@@ -169,17 +167,6 @@ void PrintVisitor::visit(Program* program){
     program->fundecs->accept(this);
 };
 
-
-int PrintVisitor::visit(IFExp* pepito) {
-    cout<< "ifexp(";
-    pepito->cond->accept(this);
-    cout<< ",";
-    pepito->left->accept(this);
-    cout<< ",";
-    pepito->right->accept(this);
-    cout << ")" ;
-    return 0;
-}
 
 void PrintVisitor::visit(WhileStatement* stm){
     cout << "while ";

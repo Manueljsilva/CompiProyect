@@ -273,22 +273,6 @@ ImpType ImpTypeChecker::visit(IdentifierExp* e) {
   }
 }
 
-ImpType ImpTypeChecker::visit(IFExp* e) {
-  if (!e->cond->accept(this).match(booltype)) {
-    cout << "Tipo en ifexp debe de ser bool" << endl;
-    exit(0);
-  }
-  sp_decr(1);
-  int sp_start = sp;
-  ImpType ttype =  e->left->accept(this);
-  sp = sp_start;
-  if (!ttype.match(e->right->accept(this))) {
-    cout << "Tipos en ifexp deben de ser iguales" << endl;
-    exit(0);
-  }
-  
-  return ttype;
-}
 
 ImpType ImpTypeChecker::visit(FCallExp* e) {
   return process_fcall(e);

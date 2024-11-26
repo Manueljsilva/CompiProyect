@@ -28,7 +28,6 @@ class UnaryExp;
 
 class Visitor {
 public:
-    virtual int visit(IFExp* exp) = 0;
     virtual int visit(BinaryExp* exp) = 0;
     virtual int visit(NumberExp* exp) = 0;
     virtual int visit(BoolExp* exp) = 0;
@@ -55,7 +54,6 @@ public:
 class PrintVisitor : public Visitor {
 public:
     void imprimir(Program* program);
-    int visit(IFExp* exp) override;
     int visit(BinaryExp* exp) override;
     int visit(NumberExp* exp) override;
     int visit(BoolExp* exp) override;

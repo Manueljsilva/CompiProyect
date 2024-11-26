@@ -296,19 +296,6 @@ int ImpCodeGen::visit(IdentifierExp* e) {
   return 0;
 }
 
-int ImpCodeGen::visit(IFExp* e) {
-  string l1 = next_label();
-  string l2 = next_label();
- 
-  e->cond->accept(this);
-  codegen(nolabel, "jmpz", l1);
-  e->left->accept(this);
-  codegen(nolabel, "goto", l2);
-  codegen(l1,"skip");
-  e->right->accept(this);
-  codegen(l2, "skip");
-  return 0;
-}
 
 int ImpCodeGen::visit(FCallExp* e) {
   // nuevo

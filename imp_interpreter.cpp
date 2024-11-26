@@ -17,10 +17,6 @@ ImpValue IdentifierExp::accept(ImpValueVisitor* v) {
 }
 
 
-ImpValue IFExp::accept(ImpValueVisitor* v) {
-    return v->visit(this);
-}
-
 ImpValue FCallExp::accept(ImpValueVisitor* v) {
     return v->visit(this);
 }
@@ -41,9 +37,6 @@ ImpType IdentifierExp::accept(TypeVisitor* v) {
     return v->visit(this);
 }
 
-ImpType IFExp::accept(TypeVisitor* v) {
-    return v->visit(this);
-}
 
 ImpType FCallExp::accept(TypeVisitor* v) {
     return v->visit(this);
@@ -446,20 +439,6 @@ ImpValue ImpInterpreter::visit(IdentifierExp* e) {
     }
 }
 
-ImpValue ImpInterpreter::visit(IFExp* e) {
-    ImpValue v = e->cond->accept(this);
-    if (v.type != TBOOL) {
-        cout << "Type error en ifexp: esperaba bool en condicional" << endl;
-        exit(0);
-    }
-
-    if(v.bool_value){
-        return e->left->accept(this);
-    }
-    else{
-        return e->right->accept(this);
-    }
-}
 
 ImpValue ImpInterpreter::visit(FCallExp* e) {
     FunDec* fdec = fdecs.lookup(e->fname);

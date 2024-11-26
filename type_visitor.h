@@ -25,7 +25,6 @@ public:
   virtual ImpType visit(NumberExp* e) = 0;
   virtual ImpType visit(BoolExp* e) = 0;
   virtual ImpType visit(IdentifierExp* e) = 0;
-  virtual ImpType visit(IFExp* e) = 0;
   virtual ImpType visit(FCallExp* e) = 0;
   virtual ImpType visit(UnaryExp* e) = 0;
 };

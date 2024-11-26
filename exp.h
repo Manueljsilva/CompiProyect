@@ -23,15 +23,6 @@ public:
     virtual ~Exp() = 0;
     static string binopToChar(BinaryOp op);
 };
-class IFExp : public Exp {
-public:
-    Exp *cond,*left, *right;
-    IFExp(Exp *cond, Exp* l, Exp* r);
-    int accept(Visitor* visitor);
-    ImpValue accept(ImpValueVisitor* v);
-    ImpType accept(TypeVisitor* v);
-    ~IFExp();
-};
 
 
 class BinaryExp : public Exp {
