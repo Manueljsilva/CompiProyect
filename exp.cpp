@@ -1,9 +1,11 @@
 #include <iostream>
 #include "exp.h"
+
+// no deberia estar aca
 #include "imp_value_visitor.hh"
 
 using namespace std;
-IFExp::IFExp(Exp* cond,Exp* l, Exp* r): cond(cond),left(l),right(r){}
+
 BinaryExp::BinaryExp(Exp* l, Exp* r, BinaryOp op):left(l),right(r),op(op) {}
 NumberExp::NumberExp(int v):value(v) {}
 BoolExp::BoolExp(bool v):value(v) {}
@@ -11,7 +13,7 @@ IdentifierExp::IdentifierExp(const string& n):name(n) {}
 FCallExp::FCallExp(string fname, list<Exp*> args):fname(fname),args(args) {}
 Exp::~Exp() {}
 BinaryExp::~BinaryExp() { delete left; delete right; }
-IFExp::~IFExp() {delete cond, delete left; delete right; }
+
 NumberExp::~NumberExp() { }
 BoolExp::~BoolExp() { }
 IdentifierExp::~IdentifierExp() { }
@@ -21,11 +23,21 @@ FCallExp::~FCallExp() {
         args.pop_front();
     }
 }
+FCallStatement::FCallStatement(string fname, list<Exp*> args): fname(fname), args(args) {}
+FCallStatement::~FCallStatement() {
+    while (!args.empty()) {
+        delete args.front();
+        args.pop_front();
+    }
+}
 AssignStatement::AssignStatement(string id, Exp* e): id(id), rhs(e) {}
 AssignStatement::~AssignStatement() {
     delete rhs;
 }
-
+PrintStatement::PrintStatement(Exp* e): e(e) {}
+PrintStatement::~PrintStatement() {
+    delete e;
+}
 
 IfStatement::IfStatement(Exp* c, Body* t, Body* e): condition(c), then(t), els(e) {}
 IfStatement::~IfStatement() {
@@ -47,15 +59,12 @@ ForStatement::~ForStatement() {
     delete body;
 }
 
-
-VarDec::VarDec(string type, list<VarInit*> vars) : type(type), vars(vars) {}
-
-VarDec::~VarDec() {
-    for (auto varInit : vars) {
+VarDec::VarDec(string type, list<VarInit*> varinits) : type(type), varinits(varinits) {}
+VarDec::~VarDec(){
+    for (auto varInit : varinits) {
         delete varInit;
     }
 }
-
 
 VarDecList::VarDecList(): vardecs() {}
 void VarDecList::add(VarDec* v) {
@@ -113,20 +122,20 @@ Stm::~Stm() {}
 string Exp::binopToChar(BinaryOp op) {
     string  c;
     switch(op) {
-        case PLUS_OP: c = "+"; break;
-        case MINUS_OP: c = "-"; break;
-        case MUL_OP: c = "*"; break;
-        case DIV_OP: c = "/"; break;
-        case LT_OP: c = "<"; break;
-        case LE_OP: c = "<="; break;
-        case GE_OP: c = ">="; break;
-        case GT_OP: c = ">"; break;
-        case EQ_OP: c = "=="; break;
-        default: c = "$";
+    case PLUS_OP: c = "+"; break;
+    case MINUS_OP: c = "-"; break;
+    case MUL_OP: c = "*"; break;
+    case DIV_OP: c = "/"; break;
+    case LT_OP: c = "<"; break;
+    case LE_OP: c = "<="; break;
+    case GE_OP: c = ">="; break;
+    case GT_OP: c = ">"; break;
+    case EQ_OP: c = "=="; break;
+    default: c = "$";
     }
     return c;
 }
-
+//cambios:
 
 VarInit::VarInit(std::string name, Exp* init) : name(name), init(init) {}
 
@@ -134,26 +143,6 @@ VarInit::~VarInit() {
     if (init != nullptr) {
         delete init;
     }
-}
-
-
-// exp.cpp
-
-FCallStatement::FCallStatement(std::string fname, std::list<Exp*> args) : fname(fname), args(args) {}
-
-FCallStatement::~FCallStatement() {
-    for (auto arg : args) {
-        delete arg;
-    }
-}
-
-int FCallStatement::accept(Visitor* visitor) {
-    visitor->visit(this);
-    return 0;
-}
-
-void FCallStatement::accept(ImpValueVisitor* v) {
-    v->visit(this);
 }
 
 
@@ -166,7 +155,13 @@ int UnaryExp::accept(Visitor* visitor)  {
     visitor->visit(this);
     return 0;
 }
-
+// no deberia estar aca
 ImpValue UnaryExp::accept(ImpValueVisitor* v)  {
     return v->visit(this);
+}
+
+
+ImpType UnaryExp::accept(TypeVisitor* v){
+    return v->visit(this);
+
 }

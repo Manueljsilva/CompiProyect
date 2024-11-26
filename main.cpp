@@ -6,6 +6,8 @@
 #include "visitor.h"
 #include "imp_interpreter.hh"
 #include "imp_type.hh"
+#include "imp_type_checker.hh"
+#include "imp_codegen.hh"
 
 using namespace std;
 
@@ -43,12 +45,22 @@ int main(int argc, const char* argv[]) {
         cout << "Iniciando Visitor:" << endl;
         PrintVisitor printVisitor;
         ImpInterpreter interpreter;
+        ImpTypeChecker typeChecker;
+        ImpCodeGen codegen(&typeChecker);
+
         cout << endl;
         cout << "IMPRIMIR:" << endl;
         printVisitor.imprimir(program);
         cout  << endl;
+        cout << "TypeChecker:" << endl;
+        typeChecker.typecheck(program);
+
         cout << endl << "Run program:" << endl;
         interpreter.interpret(program);
+
+        cout << endl << "Generar codigo:" << endl;
+        string filename =  argv[1];
+        codegen.codegen(program, filename + ".sm");
         cout << "End of program execution" << endl;
         delete program;
     } catch (const exception& e) {

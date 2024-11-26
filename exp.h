@@ -6,29 +6,22 @@
 #include <unordered_map>
 #include <list>
 #include "visitor.h"
-#include "imp_value_visitor.hh"
+#include "type_visitor.h"
 using namespace std;
 enum BinaryOp
 {
     PLUS_OP, MINUS_OP, MUL_OP, DIV_OP,LT_OP, LE_OP, GE_OP, GT_OP, EQ_OP,
 };
-
 class Body;
 class ImpValueVisitor;
+class VarInit;
 class Exp {
 public:
     virtual int  accept(Visitor* visitor) = 0;
     virtual ImpValue accept(ImpValueVisitor* v) = 0;
+    virtual ImpType accept(TypeVisitor* v) = 0;
     virtual ~Exp() = 0;
     static string binopToChar(BinaryOp op);
-};
-class IFExp : public Exp {
-public:
-    Exp *cond,*left, *right;
-    IFExp(Exp *cond, Exp* l, Exp* r);
-    int accept(Visitor* visitor);
-    ImpValue accept(ImpValueVisitor* v);
-    ~IFExp();
 };
 
 
@@ -39,6 +32,7 @@ public:
     BinaryExp(Exp* l, Exp* r, BinaryOp op);
     int accept(Visitor* visitor);
     ImpValue accept(ImpValueVisitor* v);
+    ImpType accept(TypeVisitor* v);
     ~BinaryExp();
 };
 
@@ -48,6 +42,7 @@ public:
     NumberExp(int v);
     int accept(Visitor* visitor);
     ImpValue accept(ImpValueVisitor* v);
+    ImpType accept(TypeVisitor* v);
     ~NumberExp();
 };
 
@@ -57,7 +52,7 @@ public:
     BoolExp(bool v);
     int accept(Visitor* visitor);
     ImpValue accept(ImpValueVisitor* v);
-
+    ImpType accept(TypeVisitor* v);
     ~BoolExp();
 };
 
@@ -67,8 +62,28 @@ public:
     IdentifierExp(const std::string& n);
     int accept(Visitor* visitor);
     ImpValue accept(ImpValueVisitor* v);
+    ImpType accept(TypeVisitor* v);
     ~IdentifierExp();
 };
+
+enum UnaryOp { INCREMENT_OP , DECREMENT_OP};
+class UnaryExp: public Exp{
+public:
+    Exp* operand;
+    UnaryOp op;
+    UnaryExp(Exp* operand, UnaryOp op);
+    int accept(Visitor* visitor);
+    ImpValue accept(ImpValueVisitor* v);
+    ImpType accept(TypeVisitor* v);
+
+    ~UnaryExp();
+};
+
+
+
+
+
+//-------------------------------------
 
 class FCallExp : public Exp {
 public:
@@ -77,6 +92,7 @@ public:
     FCallExp(std::string fname, list<Exp*> args);
     int accept(Visitor* visitor);
     ImpValue accept(ImpValueVisitor* v);
+    ImpType accept(TypeVisitor* v);
     ~FCallExp();
 };
 
@@ -85,6 +101,18 @@ public:
     virtual int accept(Visitor* visitor) = 0;
     virtual ~Stm() = 0;
     virtual void accept(ImpValueVisitor* v) = 0;
+    virtual void accept(TypeVisitor* v) = 0;
+};
+
+class FCallStatement: public Stm {
+public:
+    std::string fname;
+    list<Exp*> args;
+    FCallStatement(std::string fname, list<Exp*> args);
+    void accept(ImpValueVisitor* v);
+    void accept(TypeVisitor* v);
+    int accept(Visitor* visitor);
+    ~FCallStatement();
 };
 
 class AssignStatement : public Stm {
@@ -94,6 +122,7 @@ public:
     AssignStatement(std::string id, Exp* e);
     int accept(Visitor* visitor);
     void accept(ImpValueVisitor* v);
+    void accept(TypeVisitor* v);
     ~AssignStatement();
 };
 
@@ -101,14 +130,13 @@ class PrintStatement : public Stm {
 public:
     Exp* e;
     string format;
+    PrintStatement(Exp* e);
     PrintStatement(Exp* e, string format) : e(e), format(format) {}
-    int accept(Visitor* visitor) ;
+    int accept(Visitor* visitor);
     void accept(ImpValueVisitor* v);
-    ~PrintStatement() {
-        if (e) delete e;
-    }
+    void accept(TypeVisitor* v);
+    ~PrintStatement();
 };
-
 
 
 class IfStatement : public Stm {
@@ -119,6 +147,7 @@ public:
     IfStatement(Exp* condition, Body* then, Body* els);
     int accept(Visitor* visitor);
     void accept(ImpValueVisitor* v);
+    void accept(TypeVisitor* v);
     ~IfStatement();
 };
 class WhileStatement : public Stm {
@@ -128,36 +157,31 @@ public:
     WhileStatement(Exp* condition, Body* b);
     int accept(Visitor* visitor);
     void accept(ImpValueVisitor* v);
+    void accept(TypeVisitor* v);
     ~WhileStatement();
 };
 
 class ForStatement : public Stm {
 public:
-    VarDec* init; // initialization statement
-    Exp* condition; // condition expression
-    Stm* increment; // increment statement
+    VarDec* init;
+    Exp* condition;
+    Stm* increment;
     Body* body;
     ForStatement(VarDec* init, Exp* condition, Stm* increment, Body* body);
     int accept(Visitor* visitor);
     void accept(ImpValueVisitor* v);
+    void accept(TypeVisitor* v);
     ~ForStatement();
-};
-class VarInit {
-public:
-    std::string name;
-    Exp* init; // Puede ser NULL si no hay inicialización
-    VarInit(std::string name, Exp* init);
-    //void accept(TypeVisitor* v);
-    ~VarInit();
 };
 
 class VarDec {
 public:
-    std::string type;
-    std::list<VarInit*> vars;
-    VarDec(std::string type, std::list<VarInit*> vars);
+    string type;
+    list<VarInit*> varinits;
+    VarDec(string type, list<VarInit*> varinits);
     int accept(Visitor* visitor);
     void accept(ImpValueVisitor* v);
+    void accept(TypeVisitor* v);
     ~VarDec();
 };
 
@@ -168,6 +192,7 @@ public:
     void add(VarDec* vardec);
     int accept(Visitor* visitor);
     void accept(ImpValueVisitor* v);
+    void accept(TypeVisitor* v);
     ~VarDecList();
 };
 
@@ -178,6 +203,7 @@ public:
     void add(Stm* stm);
     int accept(Visitor* visitor);
     void accept(ImpValueVisitor* v);
+    void accept(TypeVisitor* v);
     ~StatementList();
 };
 
@@ -189,6 +215,7 @@ public:
     Body(VarDecList* vardecs, StatementList* stms);
     int accept(Visitor* visitor);
     void accept(ImpValueVisitor* v);
+    void accept(TypeVisitor* v);
     ~Body();
 };
 
@@ -201,6 +228,7 @@ public:
   FunDec(string fname, list<string> types, list<string> vars, string rtype, Body* body);
   int accept(Visitor* v);
   void accept(ImpValueVisitor* v);
+  void accept(TypeVisitor* v);
   ~FunDec();
 };
 
@@ -211,6 +239,7 @@ public:
   void add(FunDec* s);
   int accept(Visitor* v);
   void accept(ImpValueVisitor* v);
+  void accept(TypeVisitor* v);
   ~FunDecList();
 };
 
@@ -220,8 +249,10 @@ public:
   ReturnStatement(Exp* e);
   int accept(Visitor* v);
   void accept(ImpValueVisitor* v);
+  void accept(TypeVisitor* v);
   ~ReturnStatement();
 };
+
 
 class Program {
 public:
@@ -230,30 +261,17 @@ public:
     Program(VarDecList* vardecs, FunDecList* fundecs);
     int accept(Visitor* v);
     void accept(ImpValueVisitor* v);
+    void accept(TypeVisitor* v);
     ~Program();
 };
 
-class FCallStatement : public Stm {
+class VarInit {
 public:
-    std::string fname;
-    std::list<Exp*> args;
-    FCallStatement(std::string fname, std::list<Exp*> args);
-    int accept(Visitor* visitor);
-    void accept(ImpValueVisitor* v);
-    ~FCallStatement();
+    std::string name;
+    Exp* init; // Puede ser NULL si no hay inicialización
+    VarInit(std::string name, Exp* init);
+    ~VarInit();
 };
-enum UnaryOp { INCREMENT_OP , DECREMENT_OP};
-class UnaryExp: public Exp{
-public:
-    Exp* operand;
-    UnaryOp op;
-    UnaryExp(Exp* operand, UnaryOp op);
-    int accept(Visitor* visitor);
-    ImpValue accept(ImpValueVisitor* v);
-
-    ~UnaryExp();
-};
-
 
 
 

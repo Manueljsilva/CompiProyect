@@ -32,15 +32,12 @@ public:
   void visit(ReturnStatement* e);
   void visit(ForStatement* e);
   void visit(FCallStatement* e);
-
   ImpValue visit(BinaryExp* e);
   ImpValue visit(BoolExp* e);
   ImpValue visit(NumberExp* e);
   ImpValue visit(IdentifierExp* e);
-  ImpValue visit(IFExp* e);
   ImpValue visit(FCallExp* e);
   ImpValue visit(UnaryExp* e);
-
 };
 
 

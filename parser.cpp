@@ -89,7 +89,6 @@ VarDec* Parser::parseVarDec() {
     return vd;
 }
 
-
 VarDecList* Parser::parseVarDecList() {
     VarDecList* vdl = new VarDecList();
     VarDec* aux;
@@ -100,15 +99,6 @@ VarDecList* Parser::parseVarDecList() {
     }
     return vdl;
 }
-/*
-StatementList* Parser::parseStatementList() {
-    StatementList* sl = new StatementList();
-    while (!check(Token::RBRACE)) {  // Sigue analizando hasta encontrar '}'
-        sl->add(parseStatement());
-        match(Token::PC);  // Consume ';' si es necesario
-    }
-    return sl;
-}*/
 
 StatementList* Parser::parseStatementList() {
     StatementList* sl = new StatementList();
@@ -136,6 +126,7 @@ StatementList* Parser::parseStatementList() {
     return sl;
 }
 
+
 Body* Parser::parseBody() {
     if (!match(Token::LBRACE)) {
         cout << "Error: se esperaba '{' al inicio del cuerpo." << endl;
@@ -150,60 +141,61 @@ Body* Parser::parseBody() {
     return new Body(vdl, sl);
 }
 
+
 FunDec* Parser::parseFunDec() {
-  FunDec* fd = NULL;
-  if (match(Token::TYPE)) {
-      string returnType = previous->text;
-      if (!match(Token::MAIN) && !match(Token::ID)) {
-          cout << "Error: se esperaba 'main' o un nombre de función después del tipo." << endl;
-          exit(1);
-      }
-      string funcName = previous->text;
-      bool isMain = (funcName == "main");
+    FunDec* fd = NULL;
+    if (match(Token::TYPE)) {
+        string returnType = previous->text;
+        if (!match(Token::MAIN) && !match(Token::ID)) {
+            cout << "Error: se esperaba 'main' o un nombre de función después del tipo." << endl;
+            exit(1);
+        }
+        string funcName = previous->text;
+        bool isMain = (funcName == "main");
 
-      if (!match(Token::PI)) {
-          cout << "Error: se esperaba '(' después del nombre de la función." << endl;
-          exit(1);
-      }
+        if (!match(Token::PI)) {
+            cout << "Error: se esperaba '(' después del nombre de la función." << endl;
+            exit(1);
+        }
 
-      list<string> paramTypes;
-      list<string> paramNames;
-      if (!check(Token::PD)) {
-          if (!match(Token::TYPE)) {
-              cout << "Error: se esperaba un tipo de parámetro." << endl;
-              exit(1);
-          }
-          paramTypes.push_back(previous->text);
+        list<string> paramTypes;
+        list<string> paramNames;
+        if (!check(Token::PD)) {
+            if (!match(Token::TYPE)) {
+                cout << "Error: se esperaba un tipo de parámetro." << endl;
+                exit(1);
+            }
+            paramTypes.push_back(previous->text);
 
-          if (!match(Token::ID)) {
-              cout << "Error: se esperaba un nombre de parámetro." << endl;
-              exit(1);
-          }
-          paramNames.push_back(previous->text);
+            if (!match(Token::ID)) {
+                cout << "Error: se esperaba un nombre de parámetro." << endl;
+                exit(1);
+            }
+            paramNames.push_back(previous->text);
 
-          while (match(Token::COMA)) {
-              if (!match(Token::TYPE)) {
-                  cout << "Error: se esperaba un tipo de parámetro después de ','." << endl;
-                  exit(1);
-              }
-              paramTypes.push_back(previous->text);
+            while (match(Token::COMA)) {
+                if (!match(Token::TYPE)) {
+                    cout << "Error: se esperaba un tipo de parámetro después de ','." << endl;
+                    exit(1);
+                }
+                paramTypes.push_back(previous->text);
 
-              if (!match(Token::ID)) {
-                  cout << "Error: se esperaba un nombre de parámetro." << endl;
-                  exit(1);
-              }
-              paramNames.push_back(previous->text);
-          }
-      }
+                if (!match(Token::ID)) {
+                    cout << "Error: se esperaba un nombre de parámetro." << endl;
+                    exit(1);
+                }
+                paramNames.push_back(previous->text);
+            }
+        }
 
-      if (!match(Token::PD)) {
-          cout << "Error: se esperaba ')' después de los parámetros." << endl;
-          exit(1);
-      }
-      Body* body = parseBody();
-      fd = new FunDec(funcName, paramTypes, paramNames, returnType, body);
-  }
-  return fd;
+        if (!match(Token::PD)) {
+            cout << "Error: se esperaba ')' después de los parámetros." << endl;
+            exit(1);
+        }
+        Body* body = parseBody();
+        fd = new FunDec(funcName, paramTypes, paramNames, returnType, body);
+    }
+    return fd;
 }
 
 FunDecList* Parser::parseFunDecList() {
@@ -308,6 +300,7 @@ Program* Parser::parseProgram() {
 
     return new Program(vdl, fdl);
 }
+
 list<Stm*> Parser::parseStmList() {
     list<Stm*> slist;
     slist.push_back(parseStatement());
@@ -316,6 +309,7 @@ list<Stm*> Parser::parseStmList() {
     }
     return slist;
 }
+
 Stm* Parser::parseStatement() {
     Stm* s = NULL;
     Exp* e = NULL;
@@ -342,7 +336,7 @@ Stm* Parser::parseStatement() {
                 }
             }
             if (!match(Token::PD)) {
-                cout << "Error: se esperaba ')' después de la lista de argumentos." << endl;
+                cout << "Error: se esperaba ')' despues de la lista de argumentos." << endl;
                 exit(1);
             }
             s = new FCallStatement(lex, args);
@@ -382,7 +376,7 @@ Stm* Parser::parseStatement() {
         }
         Exp* condition = parseCExp();
         if (!match(Token::PD)) {
-            cout << "Error: se esperaba ')' después de la expresión." << endl;
+            cout << "Error: se esperaba ')' despues de la expresion." << "pero sale: " << current->text << endl;
             exit(1);
         }
 
@@ -412,7 +406,7 @@ Stm* Parser::parseStatement() {
         }
         s = new WhileStatement(e, tb);
 
-    } else if(match(Token::FOR)){
+    }else if(match(Token::FOR)){
         if(!match(Token::PI)){
             cout << "Error: se esperaba '(' después de 'for'." << endl;
             exit(1);
@@ -471,7 +465,6 @@ Exp* Parser::parseCExp(){
 
 Exp* Parser::parseExpression() {
     Exp* left = parseTerm();
-
     while (match(Token::PLUS) || match(Token::MINUS)) {
         BinaryOp op;
         if (previous->type == Token::PLUS){
@@ -506,7 +499,6 @@ Exp* Parser::parseFactor() {
     Exp* e;
     Exp* e1;
     Exp* e2;
-
     if (match(Token::TRUE)){
         return new BoolExp(1);
     }else if (match(Token::FALSE)){
@@ -517,7 +509,7 @@ Exp* Parser::parseFactor() {
     }
     else if (match(Token::ID)) {
         string texto = previous->text;
-
+        //Parse FCallExp
         if (match(Token::PI)){
             list<Exp*> args;
             if (!check(Token::PD)){
@@ -535,17 +527,7 @@ Exp* Parser::parseFactor() {
         else{
             return new IdentifierExp(previous->text);
         }
-
-    }
-    else if (match(Token::IFEXP)) {
-        match(Token::PI);
-        e=parseCExp();
-        match(Token::COMA);
-        e1=parseCExp();
-        match(Token::COMA);
-        e2=parseCExp();
-        match(Token::PD);
-        return new IFExp(e,e1,e2);
+            
     }
     else if (match(Token::PI)){
         e = parseCExp();
