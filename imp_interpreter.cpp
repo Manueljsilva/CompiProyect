@@ -344,18 +344,15 @@ void ImpInterpreter::visit(ReturnStatement* s) {
 
 void ImpInterpreter::visit(ForStatement* s) {
     env.add_level();
-    ImpValue start = s->start->accept(this);
-    ImpValue end = s->end->accept(this);
-    ImpValue paso = s->step->accept(this);
-    if (start.type != TINT || end.type != TINT || paso.type != TINT) {
-        cout << "Error de tipos:  tienen que ser enteros" << endl;
-        exit(0);
+    s->init->accept(this); // Asegúrate de que la variable `i` sea añadida al entorno
+    while (true) {
+        ImpValue condition = s->condition->accept(this);
+        if (condition.type == TBOOL && !condition.bool_value) break;
+        if (condition.type == TINT && condition.int_value == 0) break;
+        s->body->accept(this); // Ejecuta el cuerpo del bucle
+        s->increment->accept(this); // Ejecuta la declaración de incremento
     }
-    int a = start.int_value;
-    while(a<end.int_value){
-        s->b ->accept(this);
-        a += paso.int_value;
-    }
+    env.remove_level();
     return;
 }
 
@@ -547,10 +544,7 @@ void ImpInterpreter::visit(FCallStatement* s) {
 ImpValue ImpInterpreter::visit(UnaryExp* e) {
     ImpValue result;
     ImpValue operandValue = e->operand->accept(this);
-    if (operandValue.type != TINT) {
-        cout << "Error de tipos: el operando debe ser un entero" << endl;
-        exit(0);
-    }
+
     if (e->op == INCREMENT_OP) {
         result = operandValue;
         result.int_value++;

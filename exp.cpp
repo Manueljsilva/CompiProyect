@@ -50,16 +50,15 @@ WhileStatement::~WhileStatement() {
     delete condition;
     delete b;
 }
-ForStatement::ForStatement(Exp* s, Exp* e, Exp* st, Body* b): start(s), end(e), step(st), b(b) {}
+ForStatement::ForStatement(VarDec* init, Exp* condition, Stm* increment, Body* body)
+    : init(init), condition(condition), increment(increment), body(body) {}
 ForStatement::~ForStatement() {
-    delete start;
-    delete end;
-    delete step;
-    delete b;
+    delete init;
+    delete condition;
+    delete increment;
+    delete body;
 }
 
-
-VarDec::VarDec(string type, list<string> vars): type(type), vars(vars) {}
 VarDec::VarDec(string type, list<VarInit*> varinits) : type(type), varinits(varinits) {}
 VarDec::~VarDec(){
     for (auto varInit : varinits) {

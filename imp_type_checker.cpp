@@ -209,17 +209,23 @@ void ImpTypeChecker::visit(ReturnStatement* s) {
   }
   return;
 }
+/*
+void ImpTypeChecker::visit(ForStatement* s) {
+
+  sp_decr(3);
+  s->body->accept(this);
+  return;
+}*/
 
 void ImpTypeChecker::visit(ForStatement* s) {
-  if(!s->start->accept(this).match(inttype) || !s->end->accept(this).match(inttype) || !s->step->accept(this).match(inttype)) {
-    cout << "Expresiones en for deben de ser int" << endl;
-    exit(0);
-  }
+  env.add_level();
+  s->init->accept(this);
+
   sp_decr(3);
-  s->b->accept(this);
+  s->body->accept(this);
+  env.remove_level();
   return;
 }
-
 
 ImpType ImpTypeChecker::visit(BinaryExp* e) {
   ImpType t1 = e->left->accept(this);
@@ -275,7 +281,7 @@ ImpType ImpTypeChecker::visit(IFExp* e) {
   sp_decr(1);
   int sp_start = sp;
   ImpType ttype =  e->left->accept(this);
-  sp = sp_start;  //   sp_decr(1);
+  sp = sp_start;
   if (!ttype.match(e->right->accept(this))) {
     cout << "Tipos en ifexp deben de ser iguales" << endl;
     exit(0);
@@ -371,6 +377,7 @@ void ImpTypeChecker::visit(FCallStatement* s) {
 
 ImpType ImpTypeChecker::visit(UnaryExp* e) {
   ImpType operandType = e->operand->accept(this);
+  e->operand->accept(this);
   if (!operandType.match(inttype)) {
     cout << "Tipo incorrecto en UnaryExp, se esperaba int" << endl;
     exit(0);

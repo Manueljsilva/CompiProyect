@@ -102,13 +102,29 @@ VarDecList* Parser::parseVarDecList() {
 
 StatementList* Parser::parseStatementList() {
     StatementList* sl = new StatementList();
-    while (!check(Token::RBRACE)) {  // Sigue analizando hasta encontrar '}'
-        sl->add(parseStatement());
-        match(Token::PC);  // Consume ';' si es necesario
+
+    while (!check(Token::RBRACE) && !isAtEnd()) {
+        Stm* stmt = parseStatement();
+        if (stmt != NULL) {
+            sl->add(stmt);
+
+            // Verificar si el statement actual es un if-else
+            bool isIfStatement = dynamic_cast<IfStatement*>(stmt) != nullptr||
+                                dynamic_cast<ForStatement*>(stmt) != nullptr ||
+                                dynamic_cast<WhileStatement*>(stmt) != nullptr;
+
+            // No requerir punto y coma después de bloques if-else o antes de else
+            if (!check(Token::RBRACE) && !isIfStatement) {
+                if (!match(Token::PC)) {
+                    cout << "Error: se esperaba ';' después del statement" << " pero se tiene un " << current->type <<endl;
+                    exit(1);
+                }
+            }
+        }
     }
+
     return sl;
 }
-
 
 
 Body* Parser::parseBody() {
@@ -325,8 +341,8 @@ Stm* Parser::parseStatement() {
             }
             s = new FCallStatement(lex, args);
         } else if (match(Token::INCREMENT) || match(Token::DECREMENT)){
-            //nada por el momento
-            exit(1);
+            UnaryOp op = (previous->type == Token::INCREMENT) ? INCREMENT_OP : DECREMENT_OP;
+            s = new AssignStatement(lex, new UnaryExp(new IdentifierExp(lex), op));
         } else {
             cout << "Error: se esperaba '=' o '(' despues del identificador " << "pero se vio" << current->text << endl;
             exit(1);
@@ -390,8 +406,26 @@ Stm* Parser::parseStatement() {
         }
         s = new WhileStatement(e, tb);
 
-    } else if(match(Token::FOR)){
-        //nada por el momento
+    }else if(match(Token::FOR)){
+        if(!match(Token::PI)){
+            cout << "Error: se esperaba '(' después de 'for'." << endl;
+            exit(1);
+        }
+        VarDec* init = parseVarDec();
+        Exp* condition = parseCExp();
+
+        if (!match(Token::PC)) {
+            cout << "Error: se esperaba ';' después de la condicion." << "pero se vio " <<current->type <<endl;
+            exit(1);
+        }
+        Stm* increment = parseStatement();
+        if (!match(Token::PD)) {
+            cout << "Error: se esperaba ')' después de la expresión." << endl;
+            exit(1);
+        }
+        tb = parseBody();
+
+        s = new ForStatement(init, condition, increment, tb);
     } else if(match(Token::RETURN)){
 
         if (!check(Token::PD)){

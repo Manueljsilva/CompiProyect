@@ -172,11 +172,11 @@ public:
 
 class ForStatement : public Stm {
 public:
-    Exp* start;
-    Exp* end;
-    Exp* step;
-    Body* b;
-    ForStatement(Exp* start, Exp* end, Exp* step, Body* b);
+    VarDec* init;
+    Exp* condition;
+    Stm* increment;
+    Body* body;
+    ForStatement(VarDec* init, Exp* condition, Stm* increment, Body* body);
     int accept(Visitor* visitor);
     void accept(ImpValueVisitor* v);
     void accept(TypeVisitor* v);
@@ -186,9 +186,7 @@ public:
 class VarDec {
 public:
     string type;
-    list<string> vars;
     list<VarInit*> varinits;
-    VarDec(string type, list<string> vars);
     VarDec(string type, list<VarInit*> varinits);
     int accept(Visitor* visitor);
     void accept(ImpValueVisitor* v);

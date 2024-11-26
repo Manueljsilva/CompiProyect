@@ -219,6 +219,7 @@ void ImpCodeGen::visit(ReturnStatement* s) {
   return ;
 }
 
+// Revisar
 void ImpCodeGen::visit(ForStatement* s) {
 
     string l1 = next_label();
@@ -230,23 +231,23 @@ void ImpCodeGen::visit(ForStatement* s) {
     current_dir++;
 
     // Inicializar el contador
-    s->start->accept(this); 
+    s->init->accept(this);
     codegen(nolabel, "storer", current_dir);
 
     codegen(l1, "skip");
 
     // Evaluar la condición
     codegen(nolabel, "loadr", current_dir);
-    s->end->accept(this);
+    s->condition->accept(this);
     codegen(nolabel, "sub");
     codegen(nolabel, "jmpz", l2);
 
     // Ejecutar el cuerpo del bucle
-    s->b->accept(this);
+    s->body->accept(this);
 
     // Incrementar el contador
     codegen(nolabel, "loadr", current_dir);
-    s->step->accept(this); 
+    s->increment->accept(this);
     codegen(nolabel, "add");
     codegen(nolabel, "storer", current_dir);
 
@@ -345,7 +346,6 @@ void ImpCodeGen::visit(FCallStatement* s) {
 
 int ImpCodeGen::visit(UnaryExp* e) {
   IdentifierExp* idExp = dynamic_cast<IdentifierExp*>(e->operand);
-  cout<<"pasnado por aca" <<endl;
   if (!idExp) {
     cout << "Error: el operando de una expresión unaria debe ser un identificador" << endl;
     exit(1);
