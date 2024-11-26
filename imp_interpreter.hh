@@ -32,7 +32,6 @@ public:
   void visit(ReturnStatement* e);
   void visit(ForStatement* e);
   void visit(FCallStatement* e);
-
   ImpValue visit(BinaryExp* e);
   ImpValue visit(BoolExp* e);
   ImpValue visit(NumberExp* e);
@@ -40,7 +39,6 @@ public:
   ImpValue visit(IFExp* e);
   ImpValue visit(FCallExp* e);
   ImpValue visit(UnaryExp* e);
-
 };
 
 

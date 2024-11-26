@@ -10,7 +10,6 @@ ImpVType ImpValue::get_basic_type(string s) {
   else tt = NOTYPE;
   return tt;
 }
-
 void ImpValue::set_default_value(ImpVType tt) {
   type = tt;
   if (tt == TINT) {

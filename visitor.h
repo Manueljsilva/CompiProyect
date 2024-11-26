@@ -4,8 +4,6 @@
 
 #include <list>
 
-#include "exp.h"
-
 class BinaryExp;
 class NumberExp;
 class BoolExp;
@@ -26,7 +24,7 @@ class FunDecList;
 class ReturnStatement;
 class FCallExp;
 class FCallStatement;
-class UnaryExp ;
+class UnaryExp;
 
 class Visitor {
 public:
@@ -51,7 +49,7 @@ public:
     virtual void visit(FunDec* f) = 0;
     virtual void visit(FunDecList* f) = 0;
     virtual void visit(ReturnStatement* r) = 0;
-    virtual void visit(FCallStatement* e) = 0;
+    virtual void visit(FCallStatement* f) = 0;
 };
 
 class PrintVisitor : public Visitor {
@@ -64,6 +62,7 @@ public:
     int visit(IdentifierExp* exp) override;
     int visit(FCallExp* exp) override;
     int visit(UnaryExp* e) override;
+
     void visit(AssignStatement* stm) override;
     void visit(PrintStatement* stm) override;
     void visit(IfStatement* stm) override;
@@ -77,7 +76,7 @@ public:
     void visit(FunDec* f) override;
     void visit(FunDecList* f) override;
     void visit(ReturnStatement* r) override;
-    void visit(FCallStatement* stm) override;
+    void visit(FCallStatement* f) override;
 
 private:
     int indentLevel = 0;

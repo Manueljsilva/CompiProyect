@@ -28,6 +28,11 @@ int AssignStatement::accept(Visitor* visitor) {
     return 0;
 }
 
+int FCallStatement::accept(Visitor* visitor) {
+    visitor->visit(this);
+    return 0;
+}
+
 int PrintStatement::accept(Visitor* visitor) {
     visitor->visit(this);
     return 0;
@@ -69,6 +74,7 @@ int Program::accept(Visitor* visitor) {
     visitor->visit(this);
     return 0;
 }
+
 
 int FunDec::accept(Visitor* visitor) {
     visitor->visit(this);
@@ -121,37 +127,23 @@ void PrintVisitor::visit(AssignStatement* stm) {
 }
 
 void PrintVisitor::visit(PrintStatement* stm) {
-    cout << "printf(";
-
-    if (!stm->format.empty()) {
-        cout << "\"" << stm->format << "\"";
-
-        if (stm->e != nullptr) {
-            cout << ", ";
-            stm->e->accept(this);
-        }
-    } else if (stm->e != nullptr) {
-        stm->e->accept(this);
-    }
-
+    cout << "print(";
+    stm->e->accept(this);
     cout << ");";
 }
 
 void PrintVisitor::visit(IfStatement* stm) {
-    cout << "if (";
+    cout << "if ";
     stm->condition->accept(this);
-    cout << ") {" << endl;
-
+    cout << " then" << endl;
     stm->then->accept(this);
-
-    if (stm->els) {
+    if(stm->els){
         printIndent();
-        cout << "} else {" << endl;
+        cout << "else" << endl;
         stm->els->accept(this);
     }
-
     printIndent();
-    cout << "}";
+    cout << "endif";
 }
 
 void PrintVisitor::imprimir(Program* program){
@@ -185,51 +177,41 @@ void PrintVisitor::visit(WhileStatement* stm){
 }
 
 void PrintVisitor::visit(ForStatement* stm){
-    cout << "for(";
-    stm->init->accept(this);
-    cout << ";";
-    stm->condition->accept(this);
-    cout << ";";
-    stm->increment->accept(this);
-    cout << "{" << endl;
-    stm->body->accept(this);
-    printIndent();
-    cout << "}";
-
+    cout << "for ";
+    stm->start->accept(this);
+    cout << " to ";
+    stm->end->accept(this);
+    cout << " step ";
+    stm->step->accept(this);
+    cout << " do" << endl;
+    stm->b->accept(this);
+    cout << "endfor";
 }
 
-void PrintVisitor::visit(VarDec* stm) {
-    for (auto varInit : stm->vars) {
-        cout << stm->type << " ";
-        cout << varInit->name;
-        if (varInit->init != nullptr) {
-            cout << " = ";
-            varInit->init->accept(this);
-        }
+void PrintVisitor::visit(VarDec* stm){
+    cout << "var ";
+    cout << stm->type;
+    cout << " ";
+    for(auto i: stm->vars){
+        cout << i;
+        if(i != stm->vars.back()) cout << ", ";
     }
+    cout << ";";
 }
 
-void PrintVisitor::visit(VarDecList* stm) {
-    for(auto i: stm->vardecs) {
-        printIndent();
-        i->accept(this);
-        cout << ";" << endl;
-    }
-}
-
-void PrintVisitor::visit(StatementList* stm) {
-    bool lastWasPrint = false;
-    for(auto i: stm->stms) {
-
-        if (dynamic_cast<PrintStatement*>(i) && !lastWasPrint) {
-            cout << endl;
-        }
-
+void PrintVisitor::visit(VarDecList* stm){
+    for(auto i: stm->vardecs){
         printIndent();
         i->accept(this);
         cout << endl;
+    }
+}
 
-        lastWasPrint = dynamic_cast<PrintStatement*>(i) != nullptr;
+void PrintVisitor::visit(StatementList* stm){
+    for(auto i: stm->stms){
+        printIndent();
+        i->accept(this);
+        cout << endl;
     }
 }
 
@@ -240,24 +222,18 @@ void PrintVisitor::visit(Body* stm){
     decreaseIndent();
 }
 
-void PrintVisitor::visit(FunDec* stm) {
-    cout << stm->rtype << " " << stm->fname << "(";
-
+void PrintVisitor::visit(FunDec* stm){
+    cout << "fun " << stm->rtype <<  " " << stm->fname << "(";
     bool first = true;
     list<string>::iterator type, name;
-    for (type = stm->types.begin(), name = stm->vars.begin();
-         type != stm->types.end(); type++, name++) {
+    for (type = stm->types.begin(), name = stm->vars.begin(); type != stm->types.end(); type++, name++) {
         if (!first) cout << ", ";
         cout << *type << " " << *name;
         first = false;
-         }
-    cout << ") {" << endl;
-
-    increaseIndent();
+    }
+    cout << ")" << endl;
     stm->body->accept(this);
-    decreaseIndent();
-
-    cout << "}" << endl;
+    cout << "endfun";
 }
 
 void PrintVisitor::visit(FunDecList* stm){
@@ -268,11 +244,10 @@ void PrintVisitor::visit(FunDecList* stm){
 }
 
 void PrintVisitor::visit(ReturnStatement* s) {
-    cout << endl;  // Add newline before return
-    printIndent();
-    cout << "return ";
-    if (s->e != NULL) s->e->accept(this);
-    cout << ";";
+  cout << "return (";
+  if (s->e != NULL) s->e->accept(this);
+  cout << ")";
+  return;
 }
 
 int PrintVisitor::visit(FCallExp* e) {
@@ -288,6 +263,19 @@ int PrintVisitor::visit(FCallExp* e) {
   return 0;
 }
 
+void PrintVisitor::visit(FCallStatement* e) {
+  cout << e->fname << "(";
+  list<Exp*>::iterator it;
+  bool first = true;
+  for (it = e->args.begin(); it != e->args.end(); ++it) {
+    if (!first) cout << ",";
+    first = false;
+    (*it)->accept(this);
+  }
+  cout << ')';
+  
+}
+
 void PrintVisitor::printIndent() {
     for (int i = 0; i < indentLevel*2; i++) {
     cout << ' ';
@@ -296,18 +284,6 @@ void PrintVisitor::printIndent() {
 }
 
 ///////////////////////////////////////////////////////////////////////////////////
-// visitor.cpp
-
-void PrintVisitor::visit(FCallStatement* stm) {
-    cout << stm->fname << "(";
-    bool first = true;
-    for (auto arg : stm->args) {
-        if (!first) cout << ", ";
-        arg->accept(this);
-        first = false;
-    }
-    cout << ");";
-}
 
 int PrintVisitor::visit(UnaryExp* e) {
     e->operand->accept(this);

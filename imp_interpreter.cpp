@@ -25,6 +25,86 @@ ImpValue FCallExp::accept(ImpValueVisitor* v) {
     return v->visit(this);
 }
 
+ImpType BinaryExp::accept(TypeVisitor* v) {
+    return v->visit(this);
+}
+
+ImpType BoolExp::accept(TypeVisitor* v) {
+    return v->visit(this);
+}
+
+ImpType NumberExp::accept(TypeVisitor* v) {
+    return v->visit(this);
+}
+
+ImpType IdentifierExp::accept(TypeVisitor* v) {
+    return v->visit(this);
+}
+
+ImpType IFExp::accept(TypeVisitor* v) {
+    return v->visit(this);
+}
+
+ImpType FCallExp::accept(TypeVisitor* v) {
+    return v->visit(this);
+}
+
+void Program::accept(TypeVisitor* v) {
+    return v->visit(this);
+}
+
+void Body::accept(TypeVisitor* v) {
+    return v->visit(this);
+}
+
+void VarDecList::accept(TypeVisitor* v) {
+    return v->visit(this);
+}
+
+void FunDecList::accept(TypeVisitor* v) {
+    return v->visit(this);
+}
+
+void StatementList::accept(TypeVisitor* v) {
+    return v->visit(this);
+}
+
+void AssignStatement::accept(TypeVisitor* v) {
+    return v->visit(this);
+}
+
+void PrintStatement::accept(TypeVisitor* v) {
+    return v->visit(this);
+}
+
+void IfStatement::accept(TypeVisitor* v) {
+    return v->visit(this);
+}
+
+void WhileStatement::accept(TypeVisitor* v) {
+    return v->visit(this);
+}
+
+void ReturnStatement::accept(TypeVisitor* v) {
+    return v->visit(this);
+}
+
+void ForStatement::accept(TypeVisitor* v) {
+    return v->visit(this);
+}
+
+void FCallStatement::accept(TypeVisitor* v) {
+    return v->visit(this);
+}
+
+void VarDec::accept(TypeVisitor* v) {
+    return v->visit(this);
+}
+
+void FunDec::accept(TypeVisitor* v) {
+    return v->visit(this);
+}
+
 void AssignStatement::accept(ImpValueVisitor* v) {
     return v->visit(this);
 }
@@ -83,7 +163,11 @@ void ImpInterpreter::interpret(Program* p) {
     p->accept(this);
     return;
 }
-/*
+
+void FCallStatement::accept(ImpValueVisitor* v) {
+    return v->visit(this);
+}
+
 void ImpInterpreter::visit(Program* p) {
     env.add_level();
     fdecs.add_level();
@@ -96,28 +180,11 @@ void ImpInterpreter::visit(Program* p) {
     FunDec* main_dec = fdecs.lookup("main");
     retcall = false;
     main_dec->body->accept(this);
-    if (!retcall) {
+    if (main_dec->rtype != "void" && !retcall) {
         cout << "Error: Funcion main no ejecuto RETURN" << endl;
         exit(0);
     }
-}*/
 
-void ImpInterpreter::visit(Program* p) {
-    env.add_level();
-    fdecs.add_level();
-    p->vardecs->accept(this);
-    p->fundecs->accept(this);
-    if (!fdecs.check("main")) {
-        cout << "Error: No se encontró función main" << endl;
-        exit(0);
-    }
-    FunDec* main_dec = fdecs.lookup("main");
-    retcall = false;
-    main_dec->body->accept(this);
-    if (!retcall && main_dec->rtype != "void") {
-        cout << "Error: Función main no ejecutó RETURN" << endl;
-        exit(0);
-    }
 }
 
 void ImpInterpreter::visit(Body* b) {
@@ -143,25 +210,41 @@ void ImpInterpreter::visit(FunDecList* s) {
     }
     return;
 }
+///////////////////// Cambios en visit(VarDec* vd)
+/*
+void ImpInterpreter::visit(VarDec* vd) {
+    list<string>::iterator it;
+    ImpValue v;
+    ImpVType tt = ImpValue::get_basic_type(vd->type);
+    if (tt == NOTYPE) {
+        cout << "Tipo invalido: " << vd->type << endl;
+        exit(0);
+    }
+    v.set_default_value(tt);
+    for (it = vd->vars.begin(); it != vd->vars.end(); ++it) {
+        env.add_var(*it, v);
+    }
+    return;
+}*/
 
 void ImpInterpreter::visit(VarDec* vd) {
     ImpVType tt = ImpValue::get_basic_type(vd->type);
     if (tt == NOTYPE) {
-        cout << "Tipo inválido: " << vd->type << endl;
+        cout << "Tipo invalido: " << vd->type << endl;
         exit(0);
     }
-    for (auto varInit : vd->vars) {
-        ImpValue varValue;
+    for (auto varInit : vd->varinits) {
+        ImpValue v;
+        v.set_default_value(tt);
         if (varInit->init != nullptr) {
-            varValue = varInit->init->accept(this);
-            if (varValue.type != tt) {
-                cout << "Error: Tipo de inicialización no coincide para variable " << varInit->name << endl;
+            v = varInit->init->accept(this);
+            if (v.type != tt) {
+                cout << "Type Error en VarDec: Tipos de variable " << varInit->name;
+                cout << " no coinciden" << endl;
                 exit(0);
             }
-        } else {
-            varValue.set_default_value(tt);
         }
-        env.add_var(varInit->name, varValue);
+        env.add_var(varInit->name, v);
     }
     return;
 }
@@ -184,7 +267,7 @@ void ImpInterpreter::visit(StatementList* s) {
 void ImpInterpreter::visit(AssignStatement* s) {
     ImpValue v = s->rhs->accept(this);
     if (!env.check(s->id)) {
-        cout << "Variable " << s->id << " undefined" << endl;
+        cout << "Variable(AssignStatement) " << s->id << " undefined" << endl;
         exit(0);
     }
     ImpValue lhs = env.lookup(s->id);
@@ -232,7 +315,7 @@ void ImpInterpreter::visit(IfStatement* s) {
         cout << "Type error en If: esperaba bool en condicional" << endl;
         exit(0);
     }
-    if (v.bool_value){
+    if(v.bool_value){
         s->then->accept(this);
     }
     else{
@@ -251,34 +334,28 @@ void ImpInterpreter::visit(WhileStatement* s) {
         s->b->accept(this);
     }
 }
-/*
+
 void ImpInterpreter::visit(ReturnStatement* s) {
     if (s->e != NULL)
-        retval = s->e->accept(this);
-    retcall = true;
-    return;
-}*/
-void ImpInterpreter::visit(ReturnStatement* s) {
-    if (s->e != NULL)
-        retval = s->e->accept(this);
+         retval= s->e->accept(this);
     retcall = true;
     return;
 }
+
 void ImpInterpreter::visit(ForStatement* s) {
     env.add_level();
-    s->init->accept(this); // Execute initialization statement
-    while (true) {
-        ImpValue condition = s->condition->accept(this);
-        if (condition.type != TINT && condition.type != TBOOL) {
-            cout << "Type error en FOR: esperaba int o bool en la condición" << endl;
-            exit(0);
-        }
-        if (condition.type == TBOOL && !condition.bool_value) break;
-        if (condition.type == TINT && condition.int_value == 0) break;
-        s->body->accept(this); // Execute the body of the loop
-        s->increment->accept(this); // Execute the increment statement
+    ImpValue start = s->start->accept(this);
+    ImpValue end = s->end->accept(this);
+    ImpValue paso = s->step->accept(this);
+    if (start.type != TINT || end.type != TINT || paso.type != TINT) {
+        cout << "Error de tipos:  tienen que ser enteros" << endl;
+        exit(0);
     }
-    env.remove_level();
+    int a = start.int_value;
+    while(a<end.int_value){
+        s->b ->accept(this);
+        a += paso.int_value;
+    }
     return;
 }
 
@@ -378,7 +455,8 @@ ImpValue ImpInterpreter::visit(IFExp* e) {
         cout << "Type error en ifexp: esperaba bool en condicional" << endl;
         exit(0);
     }
-    if (v.bool_value){
+
+    if(v.bool_value){
         return e->left->accept(this);
     }
     else{
@@ -388,6 +466,10 @@ ImpValue ImpInterpreter::visit(IFExp* e) {
 
 ImpValue ImpInterpreter::visit(FCallExp* e) {
     FunDec* fdec = fdecs.lookup(e->fname);
+    if (fdec->rtype == "void" ){
+        cout << "Error: Funcion tipo void no debe poder asignarse" << endl;
+        exit(0);
+    }
     env.add_level();
     list<Exp*>::iterator it;
     list<string>::iterator varit;
@@ -412,8 +494,9 @@ ImpValue ImpInterpreter::visit(FCallExp* e) {
     }
     retcall = false;
     fdec->body->accept(this);
+
     if (!retcall) {
-        cout << "Error: Funcion " << e->fname << " no ejecuto RETURN" << endl;
+        cout << "Error: Funcion main no ejecuto RETURN" << endl;
         exit(0);
     }
     retcall = false;
@@ -427,13 +510,7 @@ ImpValue ImpInterpreter::visit(FCallExp* e) {
     return retval;
 }
 
-// imp_interpreter.cpp
-
 void ImpInterpreter::visit(FCallStatement* s) {
-    if (!fdecs.check(s->fname)) {
-        cout << "Error: Función " << s->fname << " no definida." << endl;
-        exit(0);
-    }
     FunDec* fdec = fdecs.lookup(s->fname);
     env.add_level();
     list<Exp*>::iterator it;
@@ -441,7 +518,7 @@ void ImpInterpreter::visit(FCallStatement* s) {
     list<string>::iterator vartype;
     ImpVType tt;
     if (fdec->vars.size() != s->args.size()) {
-        cout << "Error: Número de parámetros incorrecto en llamada a "
+        cout << "Error: Numero de parametros incorrecto en llamada a "
              << fdec->fname << endl;
         exit(0);
     }
@@ -451,21 +528,21 @@ void ImpInterpreter::visit(FCallStatement* s) {
         tt = ImpValue::get_basic_type(*vartype);
         ImpValue v = (*it)->accept(this);
         if (v.type != tt) {
-            cout << "Error FCall: Tipos de parámetro y argumento no coinciden. Función "
-                 << fdec->fname << ", parámetro " << *varit << endl;
+            cout << "Error FCall: Tipos de param y arg no coinciden. Funcion "
+                 << fdec->fname << " param " << *varit << endl;
             exit(0);
         }
         env.add_var(*varit, v);
     }
-    retcall = false;
+    
     fdec->body->accept(this);
-    if (!retcall && fdec->rtype != "void") {
-        cout << "Error: Función " << s->fname << " no ejecutó RETURN." << endl;
-        exit(0);
-    }
-    retcall = false;
+    
+
     env.remove_level();
+
+    return;
 }
+
 
 ImpValue ImpInterpreter::visit(UnaryExp* e) {
     ImpValue result;
@@ -485,4 +562,3 @@ ImpValue ImpInterpreter::visit(UnaryExp* e) {
     }
     return result;
 }
-

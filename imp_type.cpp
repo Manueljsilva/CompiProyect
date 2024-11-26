@@ -38,6 +38,7 @@ bool ImpType::set_basic_type(TType tt) {
 }
 
 
+
 bool ImpType::set_fun_type(list<string> slist, string s) {
   list<string>::iterator it;
   ttype = ImpType::NOTYPE;
@@ -62,7 +63,6 @@ bool ImpType::set_fun_type(list<string> slist, string s) {
   ttype = ImpType::FUN;
   return true;
 }
-
 
 ImpType::TType ImpType::string_to_type(string s) {
   TType tt;
